@@ -10,6 +10,10 @@ navbar:
       menu:
           - text: "Resume"
             href: resume.html
+    - text: "Recent Work"
+      menu:
+          - text: "Flexdashboard"
+            href: flexdashboard_template-2.html
     - icon: fa-envelope fa-lg
       href: mailto:<mjdasilv@umn.edu>
     - icon: fa-github fa-lg
