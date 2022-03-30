@@ -13,7 +13,7 @@ navbar:
     - text: "Recent Work"
       menu:
           - text: "Flexdashboard"
-            href: flexdashboard_template-2.html
+            href: flexdashboard_template_2.html
     - icon: fa-envelope fa-lg
       href: mailto:<mjdasilv@umn.edu>
     - icon: fa-github fa-lg
