@@ -60,7 +60,8 @@ register_google(key = "AIzaSyCDnMCDeAZX6m3LGOQPVwIGlwR6I6mOP64")
 
 #Let's grab the buildings from the osmdata
 osm_building_sf.df <- opq(bbox = "minnesota", timeout = 1000) %>%
-    add_osm_feature(key = "building", value = c("hotel", "school", "university", "hospital", "industrial")) %>%
+    add_osm_feature(
+      key = "building", value = c("hotel", "school", "university", "hospital", "industrial")) %>%
     osmdata_sf()
 
 # Checking out the sf data frame of osm_points
@@ -68,7 +69,8 @@ osm_building_sf.df <- opq(bbox = "minnesota", timeout = 1000) %>%
 building_points.df <- osm_building_sf.df$osm_points %>% 
   janitor::clean_names() %>%
   filter(!is.na(building)) %>% #only retain 'valid' tags
-  dplyr::select(osm_id, name, building, addr_city, addr_housenumber, addr_postcode, addr_street, geometry) %>%
+  dplyr::select(
+    osm_id, name, building, addr_city, addr_housenumber, addr_postcode, addr_street, geometry) %>%
   mutate(building = str_to_title(building) %>% as_factor())
 
 #Check it out (minus geometry for display)
@@ -78,7 +80,8 @@ building_gt <- building_points.df %>%
   gt_preview()
 
 #Initialize our colour pallete (discrete in this case)
-my_pallete <- colorFactor(c("blue", "red", "green", "yellow", "purple"), domain = building_points.df$building)
+my_pallete <- colorFactor(c("blue", "red", "green", "yellow", "purple"), 
+                          domain = building_points.df$building)
 
 #Add a text label like normal
 building_label.df <- building_points.df %>%
@@ -115,7 +118,7 @@ total_population_block_plotly.df <- total_population_block.df %>%
     tract      = str_split(NAME, ",") %>%
                  map_chr(2) %>%
                  str_remove("Census Tract "),
-    block     = str_split(NAME, ",") %>%
+    block      = str_split(NAME, ",") %>%
                  map_chr(1) %>%
                  str_remove("Block Group "),
     text_label = str_c(
@@ -141,45 +144,45 @@ leaflet_version_1 <- leaflet(data = building_label.df) %>%
   addProviderTiles('CartoDB.Positron') %>% 
   addCircleMarkers(
     color   = ~my_pallete(building),
-    label = ~map(text_label, HTML),
+    label   = ~map(text_label, HTML),
     opacity = 0.4,
     weight  = 2, #outline strength
     radius  = 6,
-    stroke = FALSE, fillOpacity = 0.5 #size of circle
+    stroke  = FALSE, fillOpacity = 0.5 #size of circle
   ) %>%
   addLegend(
     title    = "Building Type",
-    pal = my_pallete,
-    values = ~building_points.df$building,
+    pal      = my_pallete,
+    values   = ~building_points.df$building,
     position = "bottomright"
   )
 
 # Creating logos and adding them to the leaflet
 logos <- awesomeIconList(
   "Industrial" = makeAwesomeIcon(
-    icon = "industry",
+    icon        = "industry",
     markerColor = "blue",
-    library = "fa"
+    library     = "fa"
   ),
   "School" = makeAwesomeIcon(
-    icon = "fa-graduation-cap",
+    icon        = "fa-graduation-cap",
     markerColor = "green",
-    library = "fa"
+    library     = "fa"
   ),
   "Hotel" = makeAwesomeIcon(
-    icon = "hotel",
+    icon        = "hotel",
     markerColor = "red",
-    library = "fa"
+    library     = "fa"
   ),
   "University" = makeAwesomeIcon(
-    icon = "university",
+    icon        = "university",
     markerColor = "orange",
-    library = "fa"
+    library     = "fa"
   ),
   "Hospital" = makeAwesomeIcon(
-    icon = "hospital-o",
+    icon        = "hospital-o",
     markerColor = "purple",
-    library = "fa"
+    library     = "fa"
 ))
 
 leaflet_title <- c("Minnesota OSM Building Types")
@@ -187,13 +190,13 @@ leaflet_title <- c("Minnesota OSM Building Types")
 leaflet_building <- leaflet(data = building_label.df) %>%
   addTiles() %>% 
   addAwesomeMarkers(
-    icon = logos[building_label.df$building],
+    icon  = logos[building_label.df$building],
     label = ~map(text_label, HTML)
   ) %>%
   addLegend(
     title    = "Building Type",
-    pal = my_pallete,
-    values = ~building_points.df$building,
+    pal      = my_pallete,
+    values   = ~building_points.df$building,
     position = "bottomright"
   ) %>%
   addControl(leaflet_title, position = "bottomleft")
@@ -216,10 +219,10 @@ total_population_block.gg <- ggplot() +
   scale_fill_viridis_c("Total Population") +
   theme_map() +
   theme(
-    plot.title   = element_text(size  = 8,
+    plot.title      = element_text(size  = 8,
                                 hjust = 0.5),
-    legend.text  = element_text(size = 8),
-    legend.title = element_text(size = 8),
+    legend.text     = element_text(size = 8),
+    legend.title    = element_text(size = 8),
     legend.position = "right"
   )
 
@@ -266,10 +269,10 @@ total_population_block.ggmap <- hennepin_base.gg +
   scale_fill_viridis_c("Total Population") +
   theme_map() +
   theme(
-    plot.title   = element_text(size  = 14,
+    plot.title      = element_text(size  = 14,
                                 hjust = 0.5),
-    legend.text  = element_text(size = 10),
-    legend.title = element_text(size = 10),
+    legend.text     = element_text(size = 10),
+    legend.title    = element_text(size = 10),
     legend.position = "right"
   )
 
@@ -288,7 +291,9 @@ ggplotly(total_population_block.ggmap, tooltip = "text") %>%  style(
 ```{r, echo = FALSE, warning = FALSE, error = FALSE, message = FALSE}
 # Getting osm data for sports
 osm_sport_sf.df <- opq(bbox = "hennepin", timeout = 1000) %>%
-    add_osm_feature(key = "sport", value = c("tennis", "baseball", "basketball", "golf", "soccer", "swimming", "gymnastics")) %>%
+    add_osm_feature(
+      key = "sport", 
+      value = c("tennis", "baseball", "basketball", "golf", "soccer", "swimming", "gymnastics")) %>%
     osmdata_sf()
 
 # Checking out the sf data frame of osm_points
@@ -296,8 +301,10 @@ osm_sport_sf.df <- opq(bbox = "hennepin", timeout = 1000) %>%
 sport_points.df <- osm_sport_sf.df$osm_points %>% 
   janitor::clean_names() %>%
   filter(!is.na(sport)) %>% #only retain 'valid' tags
-    dplyr::select(osm_id, sport, addr_city, addr_housenumber, addr_street, addr_postcode, addr_state, geometry, landuse, leisure, building) %>%
-  mutate(building = str_to_title(sport) %>% as_factor())
+    dplyr::select(
+      osm_id, sport, addr_city, addr_housenumber, addr_street, addr_postcode, addr_state, geometry, landuse, leisure, building) %>%
+  mutate(building = str_to_title(sport) %>% 
+           as_factor())
 
 #Check it out (minus geometry for display)
 sport_gt <- sport_points.df %>%
@@ -308,7 +315,7 @@ sport_gt <- sport_points.df %>%
 
 sport_plotly.df <- sport_points.df %>%
   mutate(
-    sport = str_to_title(sport),
+    sport      = str_to_title(sport),
     text_label = str_c(
                   "\nSport: ",
                   sport %>%
@@ -325,10 +332,10 @@ sport_plot <- hennepin_base.gg +
   scale_colour_viridis_d("Sport Type", option = "turbo") +
   theme_map() +
   theme(
-    plot.title   = element_text(size  = 14,
+    plot.title      = element_text(size  = 14,
                                 hjust = 0.5),
-    legend.text  = element_text(size = 10),
-    legend.title = element_text(size = 10),
+    legend.text     = element_text(size = 10),
+    legend.title    = element_text(size = 10),
     legend.position = "right"
   )
 
