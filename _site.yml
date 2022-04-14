@@ -14,6 +14,8 @@ navbar:
       menu:
           - text: "Flexdashboard"
             href: flexdashboard_template_2.html
+          - text: "Spatial Dashboard"
+            href: spatial_dashboard.html
     - icon: fa-envelope fa-lg
       href: mailto:<mjdasilv@umn.edu>
     - icon: fa-github fa-lg

@@ -1,0 +1,342 @@
+---
+title: "Homework 6 - Spatial Visualization"
+author: "Maykon da Silva"
+output: 
+  flexdashboard::flex_dashboard:
+    vertical_layout: scroll
+---
+
+```{r setup, include = FALSE, echo = FALSE}
+#Load the good stuff
+library(tidyverse)
+library(lubridate)
+library(gt)
+library(paletteer)
+library(ggridges)
+library(plotly)
+library(sf)
+library(ggmap)
+library(tidycensus)
+library(leaflet)
+library(osmdata)
+library(tigris)
+library(ggsflabel)
+library(ggthemes)
+library(htmltools)
+library(htmlwidgets)
+
+#Working directory for .RMD
+knitr::opts_knit$set(echo = TRUE,
+                     root.dir = rprojroot::find_rstudio_root_file())
+
+#Controlling figure output in markdown
+knitr::opts_chunk$set(
+#  fig.height =   
+  fig.width = 6,
+#  fig.asp = .5,
+  out.width = "90%",
+#  out.height = 
+ fig.align  = "center",
+  cache = FALSE,
+  eval  = TRUE,
+  echo  = TRUE,
+  warning = FALSE
+)
+
+#Set Theme for ggplot2
+theme_set(theme_bw() + theme(plot.title = element_text(hjust = 0.5), legend.position = "bottom"))
+
+#Set Scientific notation output and decimal places for knitr
+options(scipen = 999)
+options(digits = 4)
+options(dplyr.summarise.inform = FALSE)
+
+register_google(key = "AIzaSyCDnMCDeAZX6m3LGOQPVwIGlwR6I6mOP64")
+```
+
+```{r data_read, include = FALSE, echo = FALSE}
+
+# ## 1.2 Please create 1 leaflet of the entire state of MN which contains at least 3 Open Street Maps (osmdata) features of your choice:
+
+#Let's grab the buildings from the osmdata
+osm_building_sf.df <- opq(bbox = "minnesota", timeout = 1000) %>%
+    add_osm_feature(key = "building", value = c("hotel", "school", "university", "hospital", "industrial")) %>%
+    osmdata_sf()
+
+# Checking out the sf data frame of osm_points
+#Extract the relevent sf data frame
+building_points.df <- osm_building_sf.df$osm_points %>% 
+  janitor::clean_names() %>%
+  filter(!is.na(building)) %>% #only retain 'valid' tags
+  dplyr::select(osm_id, name, building, addr_city, addr_housenumber, addr_postcode, addr_street, geometry) %>%
+  mutate(building = str_to_title(building) %>% as_factor())
+
+#Check it out (minus geometry for display)
+building_gt <- building_points.df %>%
+  as_tibble() %>%
+  dplyr::select(-geometry) %>%
+  gt_preview()
+
+#Initialize our colour pallete (discrete in this case)
+my_pallete <- colorFactor(c("blue", "red", "green", "yellow", "purple"), domain = building_points.df$building)
+
+#Add a text label like normal
+building_label.df <- building_points.df %>%
+  mutate(
+    text_label = str_c(building,
+                       "<br/>Name: ",
+                       name
+                 )
+  )
+```
+
+```{r, include = FALSE, echo = FALSE}
+
+## 1.3 Please create 1 ggplotly of Hennepin County using sf, ggmap, tidycensus, ggplot, and plotly; which describes a Census Blockgroup level 2020 American Community Survey (ACS) esimate/feature of your choosing
+
+census_api_key("c766ea439fde1ba934db8d735632035c03613aff")
+
+# Save the cache so you don't need to call the same API request over and over
+options(tigris_use_cache = TRUE)
+
+# Total Population Block Group
+total_population_block.df <- get_acs(
+  geography = "block group",
+  variables = "B01003_001", # total population from block group
+  state     = "MN",
+  county    = "Hennepin",
+  year      = 2020,
+  geometry  = TRUE
+)
+
+#Add a text label to total_population_block.df
+total_population_block_plotly.df <- total_population_block.df %>%
+  mutate(
+    tract      = str_split(NAME, ",") %>%
+                 map_chr(2) %>%
+                 str_remove("Census Tract "),
+    block     = str_split(NAME, ",") %>%
+                 map_chr(1) %>%
+                 str_remove("Block Group "),
+    text_label = str_c(
+                  "\nTract: ",
+                  tract,
+                  "\nBlock: ",
+                  block,
+                  "\nTotal Population: ",
+                  estimate
+                 )
+  )
+
+```
+
+-----------------------------------------------------------------------
+
+### Chart A
+
+```{r, echo = FALSE, warning = FALSE, error = FALSE, message = FALSE}
+#Redisplay the leaflet
+
+leaflet_version_1 <- leaflet(data = building_label.df) %>%
+  addProviderTiles('CartoDB.Positron') %>% 
+  addCircleMarkers(
+    color   = ~my_pallete(building),
+    label = ~map(text_label, HTML),
+    opacity = 0.4,
+    weight  = 2, #outline strength
+    radius  = 6,
+    stroke = FALSE, fillOpacity = 0.5 #size of circle
+  ) %>%
+  addLegend(
+    title    = "Building Type",
+    pal = my_pallete,
+    values = ~building_points.df$building,
+    position = "bottomright"
+  )
+
+# Creating logos and adding them to the leaflet
+logos <- awesomeIconList(
+  "Industrial" = makeAwesomeIcon(
+    icon = "industry",
+    markerColor = "blue",
+    library = "fa"
+  ),
+  "School" = makeAwesomeIcon(
+    icon = "fa-graduation-cap",
+    markerColor = "green",
+    library = "fa"
+  ),
+  "Hotel" = makeAwesomeIcon(
+    icon = "hotel",
+    markerColor = "red",
+    library = "fa"
+  ),
+  "University" = makeAwesomeIcon(
+    icon = "university",
+    markerColor = "orange",
+    library = "fa"
+  ),
+  "Hospital" = makeAwesomeIcon(
+    icon = "hospital-o",
+    markerColor = "purple",
+    library = "fa"
+))
+
+leaflet_title <- c("Minnesota OSM Building Types")
+
+leaflet_building <- leaflet(data = building_label.df) %>%
+  addTiles() %>% 
+  addAwesomeMarkers(
+    icon = logos[building_label.df$building],
+    label = ~map(text_label, HTML)
+  ) %>%
+  addLegend(
+    title    = "Building Type",
+    pal = my_pallete,
+    values = ~building_points.df$building,
+    position = "bottomright"
+  ) %>%
+  addControl(leaflet_title, position = "bottomleft")
+
+leaflet_building
+```
+
+-----------------------------------------------------------------------
+
+### Chart B
+
+```{r, echo = FALSE, warning = FALSE, error = FALSE, message = FALSE}
+
+#Generate the ggplot
+total_population_block.gg <- ggplot() +
+  geom_sf(data = total_population_block_plotly.df,
+          aes(fill = estimate, text = text_label, colour = tract),
+          colour = "black", size = 0.1) + 
+  labs(title = "Hennepin County, MN 2020 ACS Total Population by Block Group") + 
+  scale_fill_viridis_c("Total Population") +
+  theme_map() +
+  theme(
+    plot.title   = element_text(size  = 8,
+                                hjust = 0.5),
+    legend.text  = element_text(size = 8),
+    legend.title = element_text(size = 8),
+    legend.position = "right"
+  )
+
+
+#Display
+plotly_version_1 <- ggplotly(total_population_block.gg, tooltip = "text") %>%  style(
+    hoveron = "fills",
+    # don't apply these style rules to the first trace, which is the background graticule/grid
+    traces = seq.int(2, length(total_population_block.gg$x$data))
+  )
+
+# County bounding box - got it from OpenStreetMap
+hennepin.box <- c(-94.2215, 44.6931, -92.7246, 45.3377)
+
+
+#Get base map for Minnesota from ggmap (foundational layer)
+mn_base.map <- get_map(
+                location = hennepin.box,
+                source   = "google",
+                maptype  = "roadmap",
+                crop = TRUE
+               )
+
+# Get Henneping map
+hennepin.outline <- osmdata::getbb("hennepin", format_out = "polygon")[[1]] %>%
+  as_tibble() %>%
+  rename(longitude = V1, latitude = V2)
+
+#Create the base map
+hennepin_base.gg <- ggmap(mn_base.map) +
+  geom_polygon(data = hennepin.outline, aes(x = longitude, y = latitude), colour = "black", size = 1.6, alpha = 0.1) +
+  theme_map()
+
+#First, need to make sure the coordinate systems between the ggmap and geom_sf match
+coord_ggmap <- st_crs(hennepin_base.gg) #NA
+coord_sf    <- st_crs(total_population_block_plotly.df) #NAD83
+
+#Overlay thge sf info from tidycensus ACS income estimates
+total_population_block.ggmap <- hennepin_base.gg +  
+  geom_sf(data = total_population_block_plotly.df,
+          aes(fill = estimate, text = text_label, colour = tract),
+          colour = "black", size = 0.1, inherit.aes = FALSE) + 
+  labs(title = "Hennepin County, MN 2020 ACS Total Population by Block Group") + 
+  scale_fill_viridis_c("Total Population") +
+  theme_map() +
+  theme(
+    plot.title   = element_text(size  = 14,
+                                hjust = 0.5),
+    legend.text  = element_text(size = 16),
+    legend.title = element_text(size = 16),
+    legend.position = "right"
+  )
+
+#Display plotly
+#Display
+ggplotly(total_population_block.ggmap, tooltip = "text") %>%  style(
+    hoveron = "fills",
+    # don't apply these style rules to the first trace, which is the background graticule/grid
+    traces = seq.int(2, length(total_population_block.gg$x$data))
+  )
+
+```
+
+### Chart C
+
+```{r, echo = FALSE, warning = FALSE, error = FALSE, message = FALSE}
+# Getting osm data for sports
+osm_sport_sf.df <- opq(bbox = "hennepin", timeout = 1000) %>%
+    add_osm_feature(key = "sport", value = c("tennis", "baseball", "basketball", "golf", "soccer", "swimming", "gymnastics")) %>%
+    osmdata_sf()
+
+# Checking out the sf data frame of osm_points
+#Extract the relevent sf data frame
+sport_points.df <- osm_sport_sf.df$osm_points %>% 
+  janitor::clean_names() %>%
+  filter(!is.na(sport)) %>% #only retain 'valid' tags
+    dplyr::select(osm_id, sport, addr_city, addr_housenumber, addr_street, addr_postcode, addr_state, geometry, landuse, leisure, building) %>%
+  mutate(building = str_to_title(sport) %>% as_factor())
+
+#Check it out (minus geometry for display)
+sport_gt <- sport_points.df %>%
+  as_tibble() %>%
+  dplyr::select(-geometry) %>%
+  gt_preview()
+
+
+sport_plotly.df <- sport_points.df %>%
+  mutate(
+    sport = str_to_title(sport),
+    text_label = str_c(
+                  "\nSport: ",
+                  sport %>%
+                    str_to_title()
+                 )
+  )
+
+#Let's add it to a hennepin_base.gg
+sport_plot <- hennepin_base.gg +
+  geom_sf(data = sport_plotly.df,
+          aes(colour = sport, text = text_label),
+          inherit.aes = FALSE, alpha = 0.7, position = "identity", size = 2) +
+  labs(title = "Hennepin County, MN OSM Features for Sport Types") + 
+  scale_colour_viridis_d("Sport Type", option = "turbo") +
+  theme_map() +
+  theme(
+    plot.title   = element_text(size  = 14,
+                                hjust = 0.5),
+    legend.text  = element_text(size = 16),
+    legend.title = element_text(size = 16),
+    legend.position = "right"
+  )
+
+#Display plotly
+#Display
+ggplotly(sport_plot, tooltip = c("text")) %>%  style(
+    hoveron = "fills", hoverinfo = "none",
+    # don't apply these style rules to the first trace, which is the background graticule/grid
+    traces = c(3, 4))
+```
+
