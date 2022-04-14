@@ -3,7 +3,7 @@ title: "Homework 6 - Spatial Visualization"
 author: "Maykon da Silva"
 output: 
   flexdashboard::flex_dashboard:
-    vertical_layout: scroll
+    orientation: rows
 ---
 
 ```{r setup, include = FALSE, echo = FALSE}
@@ -130,6 +130,7 @@ total_population_block_plotly.df <- total_population_block.df %>%
 
 ```
 
+Row {data-height=500}
 -----------------------------------------------------------------------
 
 ### Chart A
@@ -201,6 +202,7 @@ leaflet_building <- leaflet(data = building_label.df) %>%
 leaflet_building
 ```
 
+Row {data-height=500}
 -----------------------------------------------------------------------
 
 ### Chart B
