@@ -32,7 +32,7 @@ knitr::opts_knit$set(echo = TRUE,
 #Controlling figure output in markdown
 knitr::opts_chunk$set(
 #  fig.height =   
-  fig.width = 6,
+  fig.width = 10,
 #  fig.asp = .5,
   out.width = "90%",
 #  out.height = 
