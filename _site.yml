@@ -12,6 +12,10 @@ navbar:
             href: resume.html
     - text: "Recent Work"
       menu:
+          - text: "Story Maps - UAV:IDC"
+            href: https://storymaps.arcgis.com/stories/37bddb3f84ce4ab19e5dd65e1bceba70
+          - text: "Soccer Stats Website"
+            href: https://maykondasilva.github.io/soccerstats.github.io/
           - text: "Flexdashboard"
             href: flexdashboard_template_2.html
           - text: "Spatial Dashboard"
