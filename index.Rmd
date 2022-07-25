@@ -17,8 +17,8 @@ title: "Maykon Junior da Silva"
 *After graduation, I hope to work for an institution or industry in which I can help develop or improve technologies that will enhance crop performance and make food production more sustainable, be of use to solve real-world problems, and consequently benefit farmers and consumers. In my spare time, I greatly enjoy playing soccer, grilling, camping, and hanging out with my friends.*  
 </font>
 
->“The future depends on what you do today.” – Mahatma Gandhi
-
 <font size = "2">
 *This website was developed with the use of R, RMarkdown, and GitHub. Interactive graphs, Spatial Mapping and Shiny App were done using sf, gt, ggplot, ggmaps, tidycensus, ggplotly, plotly, leaflet, and shiny*  
 </font>
+
+>“The future depends on what you do today.” – Mahatma Gandhi
