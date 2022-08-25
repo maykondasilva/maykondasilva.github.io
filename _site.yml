@@ -9,7 +9,7 @@ navbar:
     - text: "Professional Documents"
       menu:
           - text: "Resume"
-            href: resume.html
+            href: https://github.com/maykondasilva/maykondasilva.github.io/blob/main/photos/resume.pdf
     - text: "Recent Work"
       menu:
           - text: "Story Maps - UAV:IDC"
