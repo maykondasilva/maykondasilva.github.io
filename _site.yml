@@ -10,7 +10,7 @@ navbar:
       menu:
           - text: "Resume"
             href: resume.html
-    - text: "Recent Work"
+          - text: "Resume New"
       menu:
           - text: "Story Maps - UAV:IDC"
             href: https://storymaps.arcgis.com/stories/37bddb3f84ce4ab19e5dd65e1bceba70

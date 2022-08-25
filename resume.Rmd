@@ -41,7 +41,9 @@ options(digits = 4)
 
 # **Maykon Junior da Silva**
 
-Falcon Heights, MN
+Driven agronomist working with soybean management and physiology. Core skills include Agricultural Research, Crop Production, Remote Sensing, Statistical Analysis, and Teamwork.
+
+Saint Paul, MN
 
 E-mail: mjdasilv@umn.edu
 
